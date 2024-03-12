@@ -1,0 +1,58 @@
+{
+
+  "name": "image-templater",
+
+  "version": "1.0.0",
+
+  "description": "",
+
+  "main": "index.ts",
+
+  "engines": {
+
+    "node": "17.0",
+
+    "npm": "8.1"
+
+  },
+
+  "author": "",
+
+  "license": "ISC",
+
+  "dependencies": {
+
+    "axios": "^1.6.7",
+
+    "dotenv": "^16.4.1",
+
+    "fs": "^0.0.1-security",
+
+    "image-data-uri": "^2.0.1",
+
+    "lodash": "^4.17.21",
+
+    "nodemon": "^3.0.3",
+
+    "telegraf": "^4.15.3"
+
+  },
+
+  "scripts": {
+
+    "start": "nodemon index.ts"
+
+  },
+
+  "devDependencies": {
+
+    "@types/lodash": "^4.14.202",
+
+    "ts-loader": "^9.5.1",
+
+    "typescript": "^5.4.2"
+
+  }
+
+}
+
