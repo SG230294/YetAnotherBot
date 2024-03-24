@@ -12,7 +12,7 @@ import { parse } from 'csv-parse';
 import * as AdmZip from 'adm-zip'
 
 async function main() {
-
+// DEBUG
 }
 
 dotenv.config();
@@ -21,7 +21,6 @@ const bot = new Telegraf(tgToken)
 
 bot.on(message('photo'), (ctx) => modifyPicture(ctx));
 bot.on(message('document'),(ctx) => processFile(ctx));
-
 
 async function parseFile(csvText) {
   const parser = await parse(csvText);
@@ -58,12 +57,10 @@ async function addOverlay(text: string, url: string){
   const response = await axios.get(url,{ responseType: 'arraybuffer' })
   const buffer = Buffer.from(response.data, "utf-8")
   const dataURI = await imageDataURI.encode(buffer, 'PNG');
-
   const metadata = await sharp(buffer).metadata();
   const imgWidth = metadata.width;
   const imgHeight = metadata.height;
 
-  //const dataURI = await imageDataURI.encodeFromURL(url);
   const svgFile = await fsAsync.readFile('./template.svg',"utf-8");
   const svg = cheerio.load(svgFile, {xmlMode: true});
   svg('svg.SVG_0').attr('width', imgWidth.toString());
