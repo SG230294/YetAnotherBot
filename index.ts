@@ -2,7 +2,6 @@ import {Input, Telegraf} from 'telegraf'
 import * as dotenv from 'dotenv'
 import {message} from "telegraf/filters";
 import * as fsAsync from "fs/promises";
-import * as fs from "fs";
 import axios from "axios";
 import * as imageDataURI from "image-data-uri";
 import * as cheerio from "cheerio";
@@ -11,9 +10,6 @@ import * as sharp from 'sharp';
 import { parse } from 'csv-parse';
 import * as AdmZip from 'adm-zip'
 
-async function main() {
-// DEBUG
-}
 
 dotenv.config();
 const tgToken = process.env.BOT_TOKEN as string
@@ -22,8 +18,8 @@ const bot = new Telegraf(tgToken)
 bot.on(message('photo'), (ctx) => modifyPicture(ctx));
 bot.on(message('document'),(ctx) => processFile(ctx));
 
-async function parseFile(csvText) {
-  const parser = await parse(csvText);
+async function parseFile(csvText: string) {
+  const parser = parse(csvText);
   const records = [];
   for await (const record of parser) {
     records.push(record);
@@ -41,7 +37,7 @@ async function processFile(ctx: any) {
   const records = await parseFile(csvText);
   let n = 0;
   for (const img of records) {
-    const photo = await addOverlay(img[0], img[1]);
+    const photo = await addOverlay(`${img[0]} KG`, img[1]);
     zip.addFile(`${++n}.png`, photo, '');
   }
   // debug +
@@ -88,7 +84,6 @@ async function modifyPicture(ctx: any) {
 
 }
 
-//main();
 bot.launch();
 console.log('Bot started!');
 
