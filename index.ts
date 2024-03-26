@@ -5,7 +5,6 @@ import * as fsAsync from "fs/promises";
 import axios from "axios";
 import * as imageDataURI from "image-data-uri";
 import * as cheerio from "cheerio";
-import * as convertSvgToPng from 'convert-svg-to-png';
 import * as sharp from 'sharp';
 import { parse } from 'csv-parse';
 import * as AdmZip from 'adm-zip'
@@ -51,9 +50,14 @@ async function processFile(ctx: any) {
 async function addOverlay(text: string, url: string){
 
   const response = await axios.get(url,{ responseType: 'arraybuffer' })
-  const buffer = Buffer.from(response.data, "utf-8")
-  const dataURI = await imageDataURI.encode(buffer, 'PNG');
+  let buffer = Buffer.from(response.data)
   const metadata = await sharp(buffer).metadata();
+  let format = metadata.format;
+  if (format == 'webp') {
+    buffer = await sharp(buffer).png().toBuffer();
+    format = 'png'
+  }
+  const dataURI = await imageDataURI.encode(buffer, format)
   const imgWidth = metadata.width;
   const imgHeight = metadata.height;
 
@@ -63,15 +67,17 @@ async function addOverlay(text: string, url: string){
   svg('svg.SVG_0').attr('height', imgHeight.toString());
   svg('svg.SVG_0').attr('viewBox', `0 0 ${imgWidth} ${imgHeight}`);
   svg('g.WEIGHT').attr('transform', `matrix(0.5 0 0 0.5 100 ${imgHeight - 100})`);
-  svg('image.SVGID_2').prop('href', dataURI);
+  svg('image.SVGID_2').prop('xlink:href', dataURI);
   svg('image.SVGID_2').attr('width', imgWidth.toString());
   svg('image.SVGID_2').attr('height', imgHeight.toString());
-  svg('tspan.CAPTION').text(text)
+  svg('tspan.CAPTION').text(text);
+
   // Debug +
-  // await fsAsync.writeFile("./result.svg", svg.xml());
+  // await fsAsync.writeFile("./result.svg", ( svg.xml()));
+  // await fsAsync.writeFile("./result.png", await sharp(Buffer.from(svg.xml())).png().toBuffer());
   // Debug -
-  const png = await convertSvgToPng.convert(svg.xml());
-  return Buffer.from(png);
+
+  return sharp(Buffer.from(svg.xml())).png().toBuffer();
 
 }
 
