@@ -9,7 +9,6 @@ import * as sharp from 'sharp';
 import { parse } from 'csv-parse';
 import * as AdmZip from 'adm-zip'
 
-
 dotenv.config();
 const tgToken = process.env.BOT_TOKEN as string
 const bot = new Telegraf(tgToken)
@@ -28,22 +27,32 @@ async function parseFile(csvText: string) {
 
 async function processFile(ctx: any) {
 
-  const fileId = ctx.update.message.document.file_id;
-  const url = await ctx.telegram.getFileLink(fileId);
-  const response  = await axios({url, responseType: 'text'})
-  const csvText = response.data;
-  let zip = new AdmZip();
-  const records = await parseFile(csvText);
-  let n = 0;
-  for (const img of records) {
-    const photo = await addOverlay(`${img[0]} KG`, img[1]);
-    zip.addFile(`${++n}.png`, photo, '');
+  if(ctx.update.message.document.mime_type !== 'text/csv') {
+    ctx.reply('File must be [ .CSV | .PNG | .JPG ]');
+    return
   }
-  // debug +
-  // zip.writeZip("files.zip");
-  // debug -
-  let archive = zip.toBuffer();
-  await ctx.replyWithDocument({ source: archive , filename: 'photos.zip' });
+  const standByText: string = 'Please stand by';
+  const standByMessage = await ctx.reply(standByText);
+  try {
+    const fileId = ctx.update.message.document.file_id;
+    const url = await ctx.telegram.getFileLink(fileId);
+    const response= await axios({url, responseType: 'text'})
+    const csvText = response.data;
+    let zip = new AdmZip();
+    const records = await parseFile(csvText);
+    let n = 0;
+    for (const img of records) {
+      const photo = await addOverlay(`${img[0]} KG`, img[1]);
+      zip.addFile(`${++n}.png`, photo, ''); //TODO проверять размер выходного архива, он должен быть меньше 2ГБ
+      ctx.telegram.editMessageText(ctx.chat.id, standByMessage.message_id, 0, `${standByText} [ ${n} / ${records.length} ]`);
+    }
+    // debug +
+    // zip.writeZip("files.zip");
+    // debug -
+    let archive = zip.toBuffer();
+    await ctx.replyWithDocument({source: archive, filename: 'photos.zip'});
+  }
+  catch (err) { ctx.reply(`Error during processing CSV \n${err}`); }
 
 }
 

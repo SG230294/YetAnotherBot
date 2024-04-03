@@ -17,8 +17,6 @@ FROM node:slim
 ENV NODE_ENV production
 ENV BOT_TOKEN '5006553438:AAGtfisPFLv71VIiMj7Rzk-x63_BjJYJ4hg'
 
-#USER node
-
 # Create app directory
 WORKDIR /usr/src/app
 
