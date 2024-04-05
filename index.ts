@@ -13,6 +13,8 @@ dotenv.config();
 const tgToken = process.env.BOT_TOKEN as string
 const bot = new Telegraf(tgToken)
 
+
+bot.on(message('text'), (ctx) => textReply(ctx));
 bot.on(message('photo'), (ctx) => modifyPicture(ctx));
 bot.on(message('document'),(ctx) => processFile(ctx));
 
@@ -25,6 +27,12 @@ async function parseFile(csvText: string) {
    return records;
 }
 
+async function textReply(ctx) {
+  if (ctx.update.message.text == '/help') {
+    const helpText = await fsAsync.readFile('./help.txt','utf-8');
+    await ctx.reply(helpText);
+  }
+}
 async function processFile(ctx: any) {
 
   if(ctx.update.message.document.mime_type !== 'text/csv') {
